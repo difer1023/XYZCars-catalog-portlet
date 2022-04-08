@@ -1,0 +1,5 @@
+Bundle-Name: XYZCars-catalog-portlet
+Bundle-SymbolicName: XYZCars.catalog.portlet
+Bundle-Version: 1.0.0
+Export-Package: com.xyzcars.catalog.constants
+
