@@ -7,6 +7,7 @@ import com.liferay.portal.kernel.portlet.bridges.mvc.MVCPortlet;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.xyzcars.catalog.api.XYZCarsCatalogApi;
+import com.xyzcars.catalog.constants.XYZCarsCatalogApiKeys;
 import com.xyzcars.catalog.constants.XYZCarsCatalogPortletKeys;
 
 import java.io.IOException;
@@ -47,12 +48,12 @@ public class XYZCarsCatalogPortlet extends MVCPortlet {
 	@Override
 	public void doView(RenderRequest renderRequest, RenderResponse renderResponse)
 			throws IOException, PortletException {
-		String page = (String) renderRequest.getAttribute("page");
+		String page = (String) renderRequest.getAttribute(XYZCarsCatalogPortletKeys.PAGE);
 		
 		if(page != null){
 			include(page, renderRequest, renderResponse);
 		}else {
-			renderRequest.setAttribute("catalogItems", xyzCarsCatalogApi.getAllProducts());
+			renderRequest.setAttribute(XYZCarsCatalogPortletKeys.CATALOG_ITEMS, xyzCarsCatalogApi.getAllProducts());
 			include(viewTemplate, renderRequest, renderResponse);
 		}
 	}
@@ -60,34 +61,34 @@ public class XYZCarsCatalogPortlet extends MVCPortlet {
 	@ProcessAction (name="getProductDetail")
 	public void getProductDetail(ActionRequest actionRequest, ActionResponse actionResponse)
 			throws IOException, PortletException {
-		long productId= ParamUtil.getLong(actionRequest, "productId");
-		actionRequest.setAttribute("catalogItem", xyzCarsCatalogApi.getProductById(productId));
+		long productId= ParamUtil.getLong(actionRequest, XYZCarsCatalogApiKeys.PRODUCT_ID);
+		actionRequest.setAttribute(XYZCarsCatalogPortletKeys.CATALOG_ITEM, xyzCarsCatalogApi.getProductById(productId));
 		
-		actionRequest.setAttribute("page","/XYZCars-catalog/product-detail.jsp");
+		actionRequest.setAttribute(XYZCarsCatalogPortletKeys.PAGE,"/XYZCars-catalog/product-detail.jsp");
 	}
 	
 	@ProcessAction (name="saveAskProductForm")
 	public void saveAskProductForm(ActionRequest actionRequest, ActionResponse actionResponse)
 			throws IOException, PortletException {
 		JSONObject request = JSONFactoryUtil.createJSONObject();
-		long productId= ParamUtil.getLong(actionRequest, "productId");
-		request.put("productId", productId);
-		request.put("customerName", ParamUtil.getString(actionRequest, "customerName"));
-		request.put("customerLastName", ParamUtil.getString(actionRequest, "customerLastName"));
-		String [] customerQuestions = ParamUtil.getParameterValues(actionRequest, "customerQuestions");
+		long productId= ParamUtil.getLong(actionRequest, XYZCarsCatalogApiKeys.PRODUCT_ID);
+		request.put(XYZCarsCatalogApiKeys.PRODUCT_ID, productId);
+		request.put(XYZCarsCatalogApiKeys.CUSTOMER_NAME, ParamUtil.getString(actionRequest, XYZCarsCatalogApiKeys.CUSTOMER_NAME));
+		request.put(XYZCarsCatalogApiKeys.CUSTOMER_LAST_NAME, ParamUtil.getString(actionRequest, XYZCarsCatalogApiKeys.CUSTOMER_LAST_NAME));
+		String [] customerQuestions = ParamUtil.getParameterValues(actionRequest, XYZCarsCatalogApiKeys.CUSTOMER_QUESTIONS);
 		
-		request.put("customerQuestions", JSONFactoryUtil.createJSONArray(customerQuestions));
+		request.put(XYZCarsCatalogApiKeys.CUSTOMER_QUESTIONS, JSONFactoryUtil.createJSONArray(customerQuestions));
 		
-		actionRequest.setAttribute("catalogItem", xyzCarsCatalogApi.getProductById(productId));
+		actionRequest.setAttribute(XYZCarsCatalogPortletKeys.CATALOG_ITEM, xyzCarsCatalogApi.getProductById(productId));
 		
 		JSONObject response = xyzCarsCatalogApi.saveCustomerProductRequest(request);
-		if(response.has("id")) {
-			actionRequest.setAttribute("message", LanguageUtil.format(PortalUtil.getHttpServletRequest(actionRequest), "msg-ask-for-product-success", new String[] {response.getString("id")}));
+		if(response.has(XYZCarsCatalogPortletKeys.ID)) {
+			actionRequest.setAttribute(XYZCarsCatalogPortletKeys.MESSAGE, LanguageUtil.format(PortalUtil.getHttpServletRequest(actionRequest), "msg-ask-for-product-success", new String[] {response.getString(XYZCarsCatalogPortletKeys.ID)}));
 		}else {
-			actionRequest.setAttribute("message", "Ha ocurrido un error, por favor intente de nuevo.");
+			actionRequest.setAttribute(XYZCarsCatalogPortletKeys.MESSAGE, LanguageUtil.format(PortalUtil.getHttpServletRequest(actionRequest), "msg-general-error",new String[]{}));
 		}
 		
-		actionRequest.setAttribute("page","/XYZCars-catalog/product-detail.jsp");
+		actionRequest.setAttribute(XYZCarsCatalogPortletKeys.PAGE,"/XYZCars-catalog/product-detail.jsp");
 	}
 	
 	@Reference
